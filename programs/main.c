@@ -9,14 +9,12 @@
 
 //IO 0x20-0x5F
 //datad: offset 0xB
-//datac: offset 0x8
 //ddrd: offset 0xA
-//ddrc: offset 0x7
+//pind: offset 0x9
 
-#define PORTD_DATA (*((volatile unsigned long *)0x2B))
-#define PORTD_DDR (*((volatile unsigned long *)0x2A))
-//#define PORTC_DATA (*((volatile unsigned long *)0x28))
-//#define PORTC_DDR (*((volatile unsigned long *)0x27))
+#define PORTD_DATA (*((volatile unsigned char *)0x2B))
+#define PORTD_DDR (*((volatile unsigned char *)0x2A))
+#define PORTD_PIN (*((volatile unsigned char *)0x29))
 
 int main() {
 	/*	Initialization	*/
@@ -29,15 +27,7 @@ int main() {
 	
 	/*	Main Program Loop	*/
 	while(1<2) {
-		//Get button value
-		unsigned long button = (PORTD_DATA&(1<<4))>>2;
-		//Set LED to button value
-		PORTD_DATA |= button;
-		/*if (button>>2==0) {
-			PORTD_DATA |= (1<<2);
-		}
-		else {
-			PORTD_DATA &= ~(1<<2);
-		}*/
+		//Get button value and set LED to it
+		PORTD_DATA |= (PORTD_PIN&(1<<4))>>2;
 	}
 }
