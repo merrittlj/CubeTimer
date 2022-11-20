@@ -27,14 +27,8 @@
 #define PORTC_DDR (*((volatile unsigned char *)0x27))
 #define PORTD_DDR (*((volatile unsigned char *)0x2A))
 
-//Struct for displayable characters
-struct displayChar {
-	unsigned char displayedSegments;
-	unsigned char gSegment;
-};
-
 //All displayable digits
-struct displayChar displayed[10] = {
+unsigned char displayed[10][2] = {
 {0xFC, 0},//0
 {0x18, 0},//1
 {0x6C, 1},//2
@@ -55,7 +49,7 @@ int main() {
 	PORTC_DDR |= 0x3;
 	PORTD_DDR |= 0xFC;
 	//Create array(TODO: make nums based off of charD)
-	struct displayChar nums[4] = {
+	unsigned char nums[4][2] = {
 	{0xFC, 0},//0
 	{0x18, 0},//1
 	{0x6C, 1},//2
@@ -71,16 +65,21 @@ int main() {
 		PORTD_DATA &= ~0xFC;
 		//Set display number
 		PORTB_DATA |= 0xF-(1<<iL);
-		//Set G segment
-		PORTC_DATA |= nums[iL].gSegment<<1;
 		//Set the rest of the segments(really crappy manner)
 		unsigned char displayN = 0x0;
-		if(iL==0){displayN=0xFC;};
-		if(iL==1){displayN=0x18;};
-		if(iL==2){displayN=0x6C;};
-		if(iL==3){displayN=0x3C;};
+		if(iL==0){displayN=nums[0][0];};
+		if(iL==1){displayN=nums[1][0];};
+		if(iL==2){displayN=nums[2][0];};
+		if(iL==3){displayN=nums[3][0];};
 		PORTD_DATA |= displayN;
-		//Set index appropiately
+		//Set G segment
+        unsigned char setG = 0;
+		if(iL==0){setG=nums[0][1];};//WHY DOESN'T NUMS[iL][1] WORK
+		if(iL==1){setG=nums[1][1];};//THERE IS NO REASON WHY IT SHOULDN'T
+		if(iL==2){setG=nums[2][1];};//I HATE ARDUINO
+		if(iL==3){setG=nums[3][1];};//I hope my future job employer doesn't see this
+		PORTC_DATA |= (setG*2);
+		//Set index appropriately
 		iL += (iL==3 ? -3 : 1);
 		//Wait(TODO: homemade delay function)
 		//1s used for debugging 1ms used for production
