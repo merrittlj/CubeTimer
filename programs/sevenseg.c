@@ -65,8 +65,8 @@ int main() {
 	double delayT = 1;
 	//Time update index
 	unsigned char iT;
-	if(precision==1){iT=10;};
-	if(precision==0){iT=100;};
+	if(precision==1){iT=10;}
+	else{iT=100;}
 	while(1<2) {
 		//Clear display
 		PORTB_DATA &= ~0xF;
@@ -74,20 +74,17 @@ int main() {
 		PORTD_DATA &= ~0xFC;
 		//Set display number
 		PORTB_DATA |= 0xF-(1<<iL);
-		//Set the rest of the segments(really crappy manner)
+		//Set all of the segments(really crappy manner)
 		unsigned char displayN = 0x0;
-		if(iL==0){displayN=nums[0][0];};
-		if(iL==1){displayN=nums[1][0];};
-		if(iL==2){displayN=nums[2][0];};
-		if(iL==3){displayN=nums[3][0];};
-		PORTD_DATA |= displayN;
-		//Set G segment
         unsigned char setG = 0;
-		if(iL==0){setG=nums[0][1];};//goofy if statements
-		if(iL==1){setG=nums[1][1];};
-		if(iL==2){setG=nums[2][1];};
-		if(iL==3){setG=nums[3][1];};
+		if(iL==0){displayN=nums[0][0];setG=nums[0][1];};
+		if(iL==1){displayN=nums[1][0];setG=nums[1][1];};
+		if(iL==2){displayN=nums[2][0];setG=nums[2][1];};
+		if(iL==3){displayN=nums[3][0];setG=nums[3][1];};
+		PORTD_DATA |= displayN;
 		PORTC_DATA |= (setG*2);
+		//Set decimal point(depends on precision switch)
+		if(iL==(2-precision)){PORTC_DATA|=1;};
 		//Set indexes appropriately
 		iL += (iL==3 ? -3 : 1);
 		//Wait(TODO: homemade delay function, maybe?)
