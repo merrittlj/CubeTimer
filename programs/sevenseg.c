@@ -1,7 +1,7 @@
 /*	sevenseg.c	*/
 /*	Author: Lucas Merritt/dynamic.void	*/
 /*	Date: 11/16/22	*/
-/*	Turn on four digit seven segment display, POC	*/
+/*	POC turned main project file	*/
 
 
 /*Segment	Port	Pin*/
