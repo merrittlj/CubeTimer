@@ -71,6 +71,8 @@ int main() {
 		PORTD_DATA &= ~0xFC;
 		//Set display number
 		PORTB_DATA |= 0xF-(1<<iL);
+		//Set G segment
+		PORTC_DATA |= nums[iL].gSegment<<1;
 		//Set the rest of the segments
 		//PORTD_DATA |= nums[iL].displayedSegments;
 		PORTD_DATA |= 0xFC;
