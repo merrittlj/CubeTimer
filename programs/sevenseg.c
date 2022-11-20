@@ -48,16 +48,25 @@ int main() {
 	PORTB_DDR |= 0xF;
 	PORTC_DDR |= 0x3;
 	PORTD_DDR |= 0xFC;
-	//Create array(TODO: make nums based off of charD)
+	//Create array
 	unsigned char nums[4][2] = {
 	{0xFC, 0},//0
-	{0x18, 0},//1
-	{0x6C, 1},//2
-	{0x3C, 1},//3
+	{0xFC, 0},//1
+	{0xFC, 0},//2
+	{0xFC, 0},//3
 	};
 	//Display index
 	unsigned char iL = 0;
-
+	//Time
+	long timeMs = 00.00;
+	//Precision or extra time switch: TODO: implement on hardware
+	unsigned char precision = 1;
+	//Digit update rate(time before switching to different display), ms
+	double delayT = 1;
+	//Time update index
+	unsigned char iT;
+	if(precision==1){iT=10;};
+	if(precision==0){iT=100;};
 	while(1<2) {
 		//Clear display
 		PORTB_DATA &= ~0xF;
@@ -74,16 +83,15 @@ int main() {
 		PORTD_DATA |= displayN;
 		//Set G segment
         unsigned char setG = 0;
-		if(iL==0){setG=nums[0][1];};//WHY DOESN'T NUMS[iL][1] WORK
-		if(iL==1){setG=nums[1][1];};//THERE IS NO REASON WHY IT SHOULDN'T
-		if(iL==2){setG=nums[2][1];};//I HATE ARDUINO
-		if(iL==3){setG=nums[3][1];};//I hope my future job employer doesn't see this
+		if(iL==0){setG=nums[0][1];};//goofy if statements
+		if(iL==1){setG=nums[1][1];};
+		if(iL==2){setG=nums[2][1];};
+		if(iL==3){setG=nums[3][1];};
 		PORTC_DATA |= (setG*2);
-		//Set index appropriately
+		//Set indexes appropriately
 		iL += (iL==3 ? -3 : 1);
-		//Wait(TODO: homemade delay function)
-		//1s used for debugging 1ms used for production
-		_delay_ms(1);
+		//Wait(TODO: homemade delay function, maybe?)
+		_delay_ms(delayT);
 	}
 }
 
