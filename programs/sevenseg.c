@@ -62,7 +62,7 @@ int main() {
 	{0x3C, 1},//3
 	};
 	//Display index
-	char iL = 0;
+	unsigned char iL = 0;
 
 	while(1<2) {
 		//Clear display
@@ -73,14 +73,18 @@ int main() {
 		PORTB_DATA |= 0xF-(1<<iL);
 		//Set G segment
 		PORTC_DATA |= nums[iL].gSegment<<1;
-		//Set the rest of the segments
-		//PORTD_DATA |= nums[iL].displayedSegments;
-		PORTD_DATA |= 0xFC;
+		//Set the rest of the segments(really crappy manner)
+		unsigned char displayN = 0x0;
+		if(iL==0){displayN=0xFC;};
+		if(iL==1){displayN=0x18;};
+		if(iL==2){displayN=0x6C;};
+		if(iL==3){displayN=0x3C;};
+		PORTD_DATA |= displayN;
 		//Set index appropiately
 		iL += (iL==3 ? -3 : 1);
 		//Wait(TODO: homemade delay function)
 		//1s used for debugging 1ms used for production
-		_delay_ms(1000);
+		_delay_ms(1);
 	}
 }
 
