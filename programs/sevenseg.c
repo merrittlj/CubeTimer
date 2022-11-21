@@ -54,7 +54,7 @@ int main() {
 	{0xFC, 0},//3
 	};
 	//Display index
-	unsigned char iL = 0;
+	unsigned char  iL = 0;
 	//Time
 	long timeMs = 00.00;
 	//Precision or extra time switch: TODO: implement on hardware
