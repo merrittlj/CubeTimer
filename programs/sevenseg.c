@@ -41,8 +41,6 @@ unsigned char displayed[10][2] = {
 {0x9C, 1},//9
 };
 
-char charD[] = "0123";
-
 int main() {
 	//Set directions(All output)
 	PORTB_DDR |= 0xF;
@@ -65,8 +63,8 @@ int main() {
 	double delayT = 1;
 	//Time update index
 	unsigned char iT;
-	if(precision==1){iT=10;}
-	else{iT=100;}
+	if(precision==1){iT=(delayT*10);}
+	else{iT=(delayT*100);}
 	while(1<2) {
 		//Clear display
 		PORTB_DATA &= ~0xF;
@@ -76,7 +74,7 @@ int main() {
 		PORTB_DATA |= 0xF-(1<<iL);
 		//Set all of the segments(really crappy manner)
 		unsigned char displayN = 0x0;
-        unsigned char setG = 0;
+		unsigned char setG = 0;
 		if(iL==0){displayN=nums[0][0];setG=nums[0][1];};
 		if(iL==1){displayN=nums[1][0];setG=nums[1][1];};
 		if(iL==2){displayN=nums[2][0];setG=nums[2][1];};
