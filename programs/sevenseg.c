@@ -41,7 +41,11 @@ unsigned char displayed[10][2] = {
 {0x9C, 1},//9
 };
 
-char ihatemylife[] = "removing this breaks the code?? why???";
+//...
+//if I even change the name of this it screws everything up
+//when I tried to change it to "ihatemylife" it started messing up my 3rd digit
+//what??
+char charD[] = "0123";
 
 int main() {
 	//Set directions(All output)
@@ -51,24 +55,24 @@ int main() {
 	//Create array
 	unsigned char nums[4][2] = {
 	{0xFC, 0},//0
-	{0xFC, 1},//0
 	{0xFC, 0},//0
-	{0xFC, 1},//0
+	{0xFC, 0},//0
+	{0xFC, 0},//0
 	};
 	//Display index
-	unsigned char iL = 1;
+	unsigned char iL = 0;
 	//Time
 	long timeMs = 00.00;
 	//Precision or extra time switch: TODO: implement on hardware
 	unsigned char precision = 1;
 	//Digit update rate(time before switching to different display), ms
-	double delayT = 1000;
+	double delayT = 1;
 	//Time update index
 	unsigned char iT;
-    //Base time update index on delay time
+    //Set iT accordingly
     if(precision==1){iT=10;}
     else{iT=100;}
-	while(1<2) {
+    while(1<2) {
 		//Clear display
 		PORTB_DATA &= ~0xF;
 		PORTC_DATA &= ~0x3;
