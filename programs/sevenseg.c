@@ -107,13 +107,20 @@ int main() {
             for(int i=4; i!=0; i--) {
                 //Get last digit in number
                 int digit = tempTimeMs % 10;
-                //Temp while I try to fix code
-                digit = 1;
-                //Essentially remove the last digit for next iteration
+                //I really hope this doesn't work and isn't the way to fix this mysterious bug that I've spent way too long trying to fix
+                if(digit==0){nums[i-1][0]=displayed[0][0];nums[i-1][1]=displayed[0][1];};
+                if(digit==1){nums[i-1][0]=displayed[1][0];nums[i-1][1]=displayed[1][1];};
+                if(digit==2){nums[i-1][0]=displayed[2][0];nums[i-1][1]=displayed[2][1];};
+                if(digit==3){nums[i-1][0]=displayed[3][0];nums[i-1][1]=displayed[3][1];};
+                if(digit==4){nums[i-1][0]=displayed[4][0];nums[i-1][1]=displayed[4][1];};
+                if(digit==5){nums[i-1][0]=displayed[5][0];nums[i-1][1]=displayed[5][1];};
+                if(digit==6){nums[i-1][0]=displayed[6][0];nums[i-1][1]=displayed[6][1];};
+                if(digit==7){nums[i-1][0]=displayed[7][0];nums[i-1][1]=displayed[7][1];};
+                if(digit==8){nums[i-1][0]=displayed[8][0];nums[i-1][1]=displayed[8][1];};
+                if(digit==9){nums[i-1][0]=displayed[9][0];nums[i-1][1]=displayed[9][1];};
+                //...
+                //Remove the last digit for next iteration
                 tempTimeMs /= 10;
-                //Get details for digit and set nums to it
-                nums[i-1][0] = displayed[digit][0];
-                nums[i-1][1] = displayed[digit][1];
             }
         }
 	}
