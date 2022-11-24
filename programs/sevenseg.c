@@ -116,14 +116,20 @@ int main() {
 		if(iL==1){displayN=nums[1][0];setG=nums[1][1];};
 		if(iL==2){displayN=nums[2][0];setG=nums[2][1];};
 		if(iL==3){displayN=nums[3][0];setG=nums[3][1];};
-		PORTD_DATA |= displayN;
-		PORTC_DATA |= (setG*2);
+        //Display status
+        int displayOn = FSM[stateIndex].displayEnabled;
+        //Set all segments except G
+		PORTD_DATA |= (displayN*displayOn);
+        //Set G segment
+		PORTC_DATA |= (setG*2*displayOn);
 		//Set decimal point(depends on precision switch)
-		if(iL==(2-precision)){PORTC_DATA|=1;};
+		if(iL==(2-precision)){PORTC_DATA|=(1*displayOn);};
 		//Set index appropriately
 		iL += (iL==3 ? -3 : 1);
         //Set display status depending on state
-        PORTD_DATA &= (0xFC*FSM[stateIndex].displayEnabled);
+        PORTD_DATA &= (0xFC*displayOn);
+        //Clear decimal point depending on state
+        PORTC_DATA &= (0xFC*displayOn);
         //Wait(TODO: homemade delay function, maybe?)
 		_delay_ms(delayT);
         //Decrement time update index and check if 0
@@ -176,6 +182,8 @@ int main() {
                 //Change state
                 stateIndex = FSM[stateIndex].nextStates[0];
             }
+            //Debugging states
+            //stateIndex = startReady;
         }
 	}
 }
