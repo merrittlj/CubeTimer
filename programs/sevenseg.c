@@ -129,7 +129,7 @@ int main() {
         //Set display status depending on state
         PORTD_DATA &= (0xFC*displayOn);
         //Clear decimal point depending on state
-        PORTC_DATA &= (0xFC*displayOn);
+        PORTC_DATA &= (0xF*displayOn)+0xC;
         //Wait(TODO: homemade delay function, maybe?)
 		_delay_ms(delayT);
         //Decrement time update index and check if 0
@@ -183,7 +183,7 @@ int main() {
                 stateIndex = FSM[stateIndex].nextStates[0];
             }
             //Debugging states
-            //stateIndex = startReady;
+            //stateIndex = displayTime;
         }
 	}
 }
