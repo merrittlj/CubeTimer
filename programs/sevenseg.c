@@ -1,10 +1,11 @@
-/*	sevenseg.c	*/
-/*	Author: Lucas Merritt/dynamic.void	*/
-/*	Date: 11/16/22	*/
-/*	Spaghetti Code with mysterious bugs and if statements	*/
+/*	sevenseg.c
+ *	Author: Lucas Merritt/dynamic.void
+ *	Date: 11/16/22
+ *	Spaghetti Code with mysterious bugs and if statements	*/
 
 
-/*Segment	Port	Pin*/
+/* Hardware Implementation */
+//Segment	Port	Pin
 //D1		B		0
 //D2		B		1
 //D3		B		2
@@ -22,6 +23,7 @@
 
 #include <util/delay.h>
 
+/* Memory Locations */
 #define PORTB_DATA (*((volatile unsigned char *)0x25))
 #define PORTC_DATA (*((volatile unsigned char *)0x28))
 #define PORTD_DATA (*((volatile unsigned char *)0x2B))
@@ -29,161 +31,155 @@
 #define PORTC_DDR (*((volatile unsigned char *)0x27))
 #define PORTD_DDR (*((volatile unsigned char *)0x2A))
 #define PORTC_PINS (*((volatile unsigned char *)0x26))
+/* States in the FSM */
 #define displayTime 0
 #define startWait 1
 #define startReady 2
 #define timeRunning 3
+#define debugging 4
 
-//...
-//if I even change the name of this it screws everything up
-//when I tried to change it to "ihatemylife" it started messing up my 3rd digit
-//what??
-char charD[] = "0123";
+char charD[] = "0123"; //Removing this breaks the code?
 
 struct State {
-    //Display on or off
-    int displayEnabled;
-    //Time to wait, ms
-    double waitMs;
-    //The next states(sensors not activated, all sensors activated)
-    int nextStates[2];
+    int displayEnabled; //Display on or off
+    double waitMs; //Time to wait, ms
+    int nextStates[2]; //The next states(sensors not activated, all sensors activated)
 };
 typedef const struct State sType;
 
 int main() {
-	//Set directions(output)
+    /*      Initialization      */
+	/* Set directions(output) */
 	PORTB_DDR |= 0xF;
 	PORTC_DDR |= 0x3;
 	PORTD_DDR |= 0xFC;
-    //Clear directions(input)
+    /* Clear directions(input) */
     PORTC_DDR &= ~(0xC);
-    //All displayable digits
+    
+
+    /*      Variables     */
+    /* All of the displayable digits */
     unsigned char displayed[10][2] = {
-        {0xFC, 0},//0
-        {0x18, 0},//1
-        {0x6C, 1},//2
-        {0x3C, 1},//3
-        {0x98, 1},//4
-        {0xB4, 1},//5
-        {0xF4, 1},//6
-        {0x1C, 0},//7
-        {0xFC, 1},//8
-        {0x9C, 1},//9
+    /* Segments to enable(PD), G segment enabled */
+        {0xFC, 0}, //0
+        {0x18, 0}, //1
+        {0x6C, 1}, //2
+        {0x3C, 1}, //3
+        {0x98, 1}, //4
+        {0xB4, 1}, //5
+        {0xF4, 1}, //6
+        {0x1C, 0}, //7
+        {0xFC, 1}, //8
+        {0x9C, 1}, //9
     };
-	//Create array
-	unsigned char nums[4][2] = {
+	/* Numbers to display on the next iteration */
+	unsigned char numsToDisplay[4][2] = {
 	    {0xFC, 0},//0
 	    {0xFC, 0},//0
 	    {0xFC, 0},//0
 	    {0xFC, 0},//0
 	};
-	//Display index
-	int iL = 0;
-	//Time
-	int timeMs = 0000;
-    //Finite state machine
-    sType FSM[4] = {
-        //displayTime state
-        {1, 0, {displayTime, startWait}},
-        //startWait state
-        {1, 550, {displayTime, startReady}},
-        //startReady state
-        {0, 0, {timeRunning, startReady}},
-        //timeRunning state
-        {1, 0, {timeRunning, displayTime}}
+    /* Finite State Machine Declaration */
+    sType FSM[5] = {
+        {1, 0, {displayTime, startWait}}, //displayTime state
+        {1, 550, {displayTime, startReady}}, //startWait state
+        {0, 0, {timeRunning, startReady}}, //startReady state
+        {1, 0, {timeRunning, displayTime}}, //timeRunning state
+        {1, 0, {debugging, debugging}} //debugging state
     };
-    //State machine index
-    int stateIndex = displayTime;
-	//Precision/extra time switch: TODO: implement on hardware
-	int precision = 1;
-	//Digit update rate(time before switching to different display), ms
-	int delayT = 1;
-	//Time update index
-	int timeUpdate = precision ? 10 : 100;
-    //State wait index
-    int stateWait = 0;
+
+    /* Indexes */
+	int displayIndex = 0; //Index of which display to show the current num on
+    int displayStateIndex = timeRunning; //Finite state machine index && initial state
+    
+    /* Booleans */
+	int precisionEnabled = 1; //Precision switch: 1 = two points of accuracy/precision 0 = 1 point of accuracy/extra time
+
+    /* Counters */
+	int msTimeCounter = 0000; //Somewhat primitive time counter, when time update index is done it increments
+    int stateWaitCounter = 0; //How long to wait in the current state
+	int timeUpdateCounter = precisionEnabled ? 10 : 100; //How often msTimeCounter is incremented, based on precision
+
+    /* Time */
+	int displaySwitchTime = 1; //Time before switching between displays
+
     while(1<2) {
-		//Clear display
+        /* Clearing the display */
 		PORTB_DATA &= ~0xF;
 		PORTC_DATA &= ~0x3;
 		PORTD_DATA &= ~0xFC;
-		//Set display number
-		PORTB_DATA |= 0xF-(1<<iL);
-		//Set all of the segments(really crappy manner)
-		unsigned char displayN = 0x0;
-        unsigned char setG = 0;
-		if(iL==0){displayN=nums[0][0];setG=nums[0][1];};
-		if(iL==1){displayN=nums[1][0];setG=nums[1][1];};
-		if(iL==2){displayN=nums[2][0];setG=nums[2][1];};
-		if(iL==3){displayN=nums[3][0];setG=nums[3][1];};
-        //Display status
-        int displayOn = FSM[stateIndex].displayEnabled;
-        //Set all segments except G
-		PORTD_DATA |= (displayN*displayOn);
-        //Set G segment
-		PORTC_DATA |= (setG*2*displayOn);
-		//Set decimal point(depends on precision switch)
-		if(iL==(2-precision)){PORTC_DATA|=(1*displayOn);};
-		//Set index appropriately
-		iL += (iL==3 ? -3 : 1);
-        //Set display status depending on state
-        PORTD_DATA &= (0xFC*displayOn);
-        //Clear decimal point depending on state
-        PORTC_DATA &= (0xF*displayOn)+0xC;
-        //Wait(TODO: homemade delay function, maybe?)
-		_delay_ms(delayT);
-        //Decrement time update index and check if 0
-        if(stateIndex==timeRunning) {
-            if(timeUpdate!=0){timeUpdate--;}
+
+        /*    Segment Configuration    */
+		PORTB_DATA |= 0xF-(1<<displayIndex); //Set the current display based on the index
+		
+        /* Variables */
+        int stateDisplayEnabled = FSM[displayStateIndex].displayEnabled; //Display status based on state
+		unsigned char displayN = 0x0; //What number to display
+        int setG = 0; //If the G segment is enabled or not
+
+        /* Retrieve numbers from numsToDisplay
+         * Weird method, unfixable bug besides this 
+         * TODO: Fix */
+		if(displayIndex==0){displayN=numsToDisplay[0][0];setG=numsToDisplay[0][1];};
+		if(displayIndex==1){displayN=numsToDisplay[1][0];setG=numsToDisplay[1][1];};
+		if(displayIndex==2){displayN=numsToDisplay[2][0];setG=numsToDisplay[2][1];};
+		if(displayIndex==3){displayN=numsToDisplay[3][0];setG=numsToDisplay[3][1];};
+        
+
+        /*    Display Adjustment    */
+        /* Set Segments */
+		PORTD_DATA |= (displayN*stateDisplayEnabled); //Set all segments except G
+		PORTC_DATA |= (setG*2*stateDisplayEnabled); //Set G segment
+        
+        /* Set Decimal Point */
+		if(displayIndex==(2-precisionEnabled)){PORTC_DATA|=(1*stateDisplayEnabled);}; //Set decimal point dependent on precisionEnabled
+
+        /* Clear display if necessary */
+        PORTD_DATA &= (0xFC*stateDisplayEnabled); //Clear segments dependent on state
+        PORTC_DATA &= (0xF*stateDisplayEnabled)+0xC; //Clear decimal point dependent on state
+
+
+        /* Delay */
+		_delay_ms(displaySwitchTime);
+
+        /*    Update Variables    */
+		displayIndex += (displayIndex==3 ? -3 : 1); //Set displayIndex appropriately
+
+        if(displayStateIndex==timeRunning) { //Only update if state is timeRunning
+            if(timeUpdateCounter!=0){timeUpdateCounter--;} //Decrement timeUpdateCounter if it's not finished
             else {
-                //Reset index
-                timeUpdate = precision ? 10 : 100;
-                //Update time
-                timeMs++;
-                //Create temp version of time to get individual digits
-                int tempTimeMs = timeMs;
-                for(int i=4; i!=0; i--) {
-                    //Get last digit in number
-                    int digit = tempTimeMs % 10;
-                    //I really hope this doesn't work and isn't the way to fix this mysterious bug that I've spent way too long trying to fix
-                    if(digit==0){nums[i-1][0]=displayed[0][0];nums[i-1][1]=displayed[0][1];};
-                    if(digit==1){nums[i-1][0]=displayed[1][0];nums[i-1][1]=displayed[1][1];};
-                    if(digit==2){nums[i-1][0]=displayed[2][0];nums[i-1][1]=displayed[2][1];};
-                    if(digit==3){nums[i-1][0]=displayed[3][0];nums[i-1][1]=displayed[3][1];};
-                    if(digit==4){nums[i-1][0]=displayed[4][0];nums[i-1][1]=displayed[4][1];};
-                    if(digit==5){nums[i-1][0]=displayed[5][0];nums[i-1][1]=displayed[5][1];};
-                    if(digit==6){nums[i-1][0]=displayed[6][0];nums[i-1][1]=displayed[6][1];};
-                    if(digit==7){nums[i-1][0]=displayed[7][0];nums[i-1][1]=displayed[7][1];};
-                    if(digit==8){nums[i-1][0]=displayed[8][0];nums[i-1][1]=displayed[8][1];};
-                    if(digit==9){nums[i-1][0]=displayed[9][0];nums[i-1][1]=displayed[9][1];};
-                    //...
-                    //Remove the last digit for next iteration
-                    tempTimeMs /= 10;
+                /* Update Time Variables */
+                timeUpdateCounter = precisionEnabled ? 10 : 100; //Reset the time update counter
+                msTimeCounter++; //Update/increment the time counter
+                
+                /* Digits */
+                int tempMsTimeCounter = msTimeCounter; //Create throwaray time variable
+                for(int i=4; i!=0; i--) { //For each number in numsToDisplay
+                    int digit = tempMsTimeCounter % 10; //Get last digit in time
+                    tempMsTimeCounter /= 10; //Remove the last digit in time
+
+                    /* Update numsToDisplay
+                     * Strange way again due to mysterious bugs */
+                    if(digit==0){numsToDisplay[i-1][0]=displayed[0][0];numsToDisplay[i-1][1]=displayed[0][1];};
+                    if(digit==1){numsToDisplay[i-1][0]=displayed[1][0];numsToDisplay[i-1][1]=displayed[1][1];};
+                    if(digit==2){numsToDisplay[i-1][0]=displayed[2][0];numsToDisplay[i-1][1]=displayed[2][1];};
+                    if(digit==3){numsToDisplay[i-1][0]=displayed[3][0];numsToDisplay[i-1][1]=displayed[3][1];};
+                    if(digit==4){numsToDisplay[i-1][0]=displayed[4][0];numsToDisplay[i-1][1]=displayed[4][1];};
+                    if(digit==5){numsToDisplay[i-1][0]=displayed[5][0];numsToDisplay[i-1][1]=displayed[5][1];};
+                    if(digit==6){numsToDisplay[i-1][0]=displayed[6][0];numsToDisplay[i-1][1]=displayed[6][1];};
+                    if(digit==7){numsToDisplay[i-1][0]=displayed[7][0];numsToDisplay[i-1][1]=displayed[7][1];};
+                    if(digit==8){numsToDisplay[i-1][0]=displayed[8][0];numsToDisplay[i-1][1]=displayed[8][1];};
+                    if(digit==9){numsToDisplay[i-1][0]=displayed[9][0];numsToDisplay[i-1][1]=displayed[9][1];};
                 }
             }
         }
-        stateWait--;
-        //Check if wait is up
-        if(stateWait<=0) {
-            //Reset wait
-            stateWait = FSM[stateIndex].waitMs;
-            //Check sensors
-            //Set sensor1, pin 2
-            unsigned char sensor1 = (PORTC_DATA&0x4);
-            //Set sensor2, pin 3
-            unsigned char sensor2 = (PORTC_DATA&0x8);
-            //If both sensors activated
-            if((sensor1+sensor2)==0xC) {
-                //Change state
-                stateIndex = FSM[stateIndex].nextStates[1];
-            }
-            //If not all of the sensors activated
-            else {
-                //Change state
-                stateIndex = FSM[stateIndex].nextStates[0];
-            }
-            //Debugging states
-            //stateIndex = displayTime;
+
+        /* Update State */
+        stateWaitCounter--; //Decrease wait(1 ms passed by default)
+
+        if(stateWaitCounter<=0) { //If the state wait is up
+            displayStateIndex = timeRunning; //Debugging purposes, TODO: Ultrasonic sensor code
+            stateWaitCounter = FSM[displayStateIndex].waitMs; //Reset state wait counter dependent on state
         }
 	}
 }
