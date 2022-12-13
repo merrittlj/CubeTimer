@@ -6,28 +6,4 @@ leftover lcd test files, going from lcd to segmented display and back
 
 will actually add schematics and stuff once I finish this
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-i hate charD[] and iL(look at commit history)
+working on making it handless using ultrasonic sensors
