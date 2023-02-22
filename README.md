@@ -7,3 +7,5 @@ leftover lcd test files, going from lcd to segmented display and back
 will actually add schematics and stuff once I finish this
 
 working on making it handless using ultrasonic sensors
+
+now a archive due to generally bad code and in the future if re-mastered the code would be re-written as well
